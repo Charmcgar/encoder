@@ -32,7 +32,7 @@
             ["encrypt", "decrypt"]
         );
 
-        async function encodeText(text) {
+        async function encodeText(text, type) {
             const encoder = new TextEncoder();
             const data = encoder.encode(text);
             const iv = window.crypto.getRandomValues(new Uint8Array(12));
@@ -44,12 +44,21 @@
                 await key,
                 data
             );
-            return btoa(String.fromCharCode(...new Uint8Array(ciphertext)));
+            if (type === 'base64') {
+                return btoa(String.fromCharCode(...new Uint8Array(ciphertext)));
+            } else if (type === 'hex') {
+                return Array.from(new Uint8Array(ciphertext)).map(b => b.toString(16).padStart(2, '0')).join('');
+            }
         }
 
-        async function decodeText(encodedText) {
+        async function decodeText(encodedText, type) {
             const decoder = new TextDecoder();
-            const data = Uint8Array.from(atob(encodedText), c => c.charCodeAt(0));
+            let data;
+            if (type === 'base64') {
+                data = Uint8Array.from(atob(encodedText), c => c.charCodeAt(0));
+            } else if (type === 'hex') {
+                data = new Uint8Array(encodedText.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+            }
             const iv = window.crypto.getRandomValues(new Uint8Array(12)); // Use the same IV as used during encryption
             const decrypted = await crypto.subtle.decrypt(
                 {
@@ -64,8 +73,9 @@
 
         async function onEncode() {
             const text = document.getElementById('text-input').value;
+            const type = document.getElementById('encoding-type').value;
             if (text) {
-                const encodedText = await encodeText(text);
+                const encodedText = await encodeText(text, type);
                 document.getElementById('result').innerText = encodedText;
             } else {
                 alert("Please enter text to encode.");
@@ -74,9 +84,10 @@
 
         async function onDecode() {
             const encodedText = document.getElementById('text-input').value;
+            const type = document.getElementById('encoding-type').value;
             if (encodedText) {
                 try {
-                    const decodedText = await decodeText(encodedText);
+                    const decodedText = await decodeText(encodedText, type);
                     document.getElementById('result').innerText = decodedText;
                 } catch (error) {
                     alert("Invalid encoded text.");
@@ -92,6 +103,13 @@
     <div>
         <label for="text-input">Enter text:</label>
         <input type="text" id="text-input">
+    </div>
+    <div>
+        <label for="encoding-type">Encoding Type:</label>
+        <select id="encoding-type">
+            <option value="base64">Base64</option>
+            <option value="hex">Hex</option>
+        </select>
     </div>
     <div>
         <button onclick="onEncode()">Encode</button>
