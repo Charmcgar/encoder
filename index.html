@@ -116,6 +116,35 @@
                 console.error('Failed to paste: ', err);
             });
         }
+
+        // WebSocket client code
+        document.addEventListener("DOMContentLoaded", () => {
+            const ws = new WebSocket("ws://localhost:8080");
+
+            ws.onopen = () => {
+                console.log("Connected to WebSocket server");
+            };
+
+            ws.onmessage = (event) => {
+                const chat = document.getElementById('chat');
+                const message = document.createElement('div');
+                message.textContent = event.data;
+                chat.appendChild(message);
+            };
+
+            ws.onclose = () => {
+                console.log("Disconnected from WebSocket server");
+            };
+
+            document.getElementById('send').onclick = () => {
+                const messageInput = document.getElementById('message');
+                const message = messageInput.value;
+                if (message) {
+                    ws.send(message);
+                    messageInput.value = '';
+                }
+            };
+        });
     </script>
 </head>
 <body>
@@ -144,6 +173,12 @@
         <h2>Result:</h2>
         <p id="result"></p>
         <button onclick="copyResult()">Copy</button>
+    </div>
+    <div class="chat-room">
+        <h2>Chat Room</h2>
+        <div id="chat" class="chat-box"></div>
+        <input type="text" id="message" placeholder="Type your message here">
+        <button id="send">Send</button>
     </div>
 </body>
 </html>
