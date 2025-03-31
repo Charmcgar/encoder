@@ -117,6 +117,23 @@
                 alert("Please enter encoded text and password to decode.");
             }
         }
+
+        function copyResult() {
+            const resultText = document.getElementById('result').innerText;
+            navigator.clipboard.writeText(resultText).then(() => {
+                alert('Result copied to clipboard.');
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+            });
+        }
+
+        function pasteText() {
+            navigator.clipboard.readText().then(text => {
+                document.getElementById('text-input').value = text;
+            }).catch(err => {
+                console.error('Failed to paste: ', err);
+            });
+        }
     </script>
 </head>
 <body>
@@ -124,6 +141,7 @@
     <div>
         <label for="text-input">Enter text:</label>
         <input type="text" id="text-input">
+        <button onclick="pasteText()">Paste</button>
     </div>
     <div>
         <label for="password-input">Enter password:</label>
@@ -143,6 +161,7 @@
     <div class="result">
         <h2>Result:</h2>
         <p id="result"></p>
+        <button onclick="copyResult()">Copy</button>
     </div>
 </body>
 </html>
