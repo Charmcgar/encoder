@@ -104,8 +104,8 @@
 
         function copyResult() {
             const resultText = document.getElementById('result').innerText;
-            navigator.clipboard.writeText(resultText);
-               
+            navigator.clipboard.writeText(resultText).catch(err => {
+                console.error('Failed to copy: ', err);
             });
         }
 
