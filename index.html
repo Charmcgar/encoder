@@ -104,10 +104,8 @@
 
         function copyResult() {
             const resultText = document.getElementById('result').innerText;
-            navigator.clipboard.writeText(resultText).then(() => {
-                alert('Result copied to clipboard.');
-            }).catch(err => {
-                console.error('Failed to copy: ', err);
+            navigator.clipboard.writeText(resultText);
+               
             });
         }
 
