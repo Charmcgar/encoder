@@ -42,7 +42,7 @@
                 key,
                 data
             );
-            const ivAndCiphertext = a new Uint8Array(iv.length + ciphertext.byteLength);
+            const ivAndCiphertext = new Uint8Array(iv.length + ciphertext.byteLength);
             ivAndCiphertext.set(iv);
             ivAndCiphertext.set(new Uint8Array(ciphertext), iv.length);
             if (type === 'base64') {
@@ -116,49 +116,6 @@
                 console.error('Failed to paste: ', err);
             });
         }
-
-        // WebSocket client code with improved handling
-        document.addEventListener("DOMContentLoaded", () => {
-            let ws;
-
-            function connectWebSocket() {
-                ws = new WebSocket("ws://localhost:8080");
-
-                ws.onopen = () => {
-                    console.log("Connected to WebSocket server");
-                };
-
-                ws.onmessage = (event) => {
-                    const chat = document.getElementById('chat');
-                    const message = document.createElement('div');
-                    message.textContent = event.data;
-                    chat.appendChild(message);
-                };
-
-                ws.onclose = () => {
-                    console.log("Disconnected from WebSocket server");
-                    // Attempt to reconnect after a delay
-                    setTimeout(connectWebSocket, 1000);
-                };
-
-                ws.onerror = (error) => {
-                    console.error('WebSocket error: ', error);
-                };
-            }
-
-            connectWebSocket();
-
-            document.getElementById('send').onclick = () => {
-                const messageInput = document.getElementById('message');
-                const message = messageInput.value;
-                if (message && ws.readyState === WebSocket.OPEN) {
-                    ws.send(message);
-                    messageInput.value = '';
-                } else {
-                    console.error('WebSocket is not open: ', ws.readyState);
-                }
-            };
-        });
     </script>
 </head>
 <body>
@@ -187,12 +144,6 @@
         <h2>Result:</h2>
         <p id="result"></p>
         <button onclick="copyResult()">Copy</button>
-    </div>
-    <div class="chat-room">
-        <h2>Chat Room</h2>
-        <div id="chat" class="chat-box"></div>
-        <input type="text" id="message" placeholder="Type your message here">
-        <button id="send">Send</button>
     </div>
 </body>
 </html>
