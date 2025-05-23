@@ -1,10 +1,113 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Secure Encoder</title>
-    <link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Secure Encoder - Text & File Encryption</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+        h1 {
+            color: #0056b3;
+        }
+        div {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select, button {
+            font-size: 16px;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #0056b3;
+            color: white;
+            cursor: pointer;
+            margin-top: 5px;
+        }
+        button:hover {
+            background-color: #003f7d;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #fff;
+        }
+        .result h2 {
+            margin-top: 0;
+        }
+        .result p {
+            word-break: break-word;
+        }
+    </style>
+</head>
+<body>
+    <h1>Secure Encoder - Text & File Encryption</h1>
+
+    <!-- Text encryption section -->
+    <div>
+        <label for="text-input">Enter text:</label>
+        <input type="text" id="text-input" />
+        <button onclick="pasteText()">Paste</button>
+    </div>
+    <div>
+        <label for="password-input">Enter password:</label>
+        <input type="password" id="password-input" />
+    </div>
+    <div>
+        <label for="encoding-type">Encoding Type:</label>
+        <select id="encoding-type">
+            <option value="base64">Base64</option>
+            <option value="hex">Hex</option>
+        </select>
+    </div>
+    <div>
+        <button onclick="onEncode()">Encode Text</button>
+        <button onclick="onDecode()">Decode Text</button>
+    </div>
+
+    <!-- File encryption section -->
+    <hr />
+    <h2>File Encryption / Decryption</h2>
+
+    <div>
+        <label for="file-input">Choose file:</label>
+        <input type="file" id="file-input" />
+    </div>
+    <div>
+        <label for="file-password-input">Enter password for file:</label>
+        <input type="password" id="file-password-input" />
+    </div>
+    <div>
+        <label for="file-encoding-type">Encoding Type:</label>
+        <select id="file-encoding-type">
+            <option value="base64">Base64</option>
+            <option value="hex">Hex</option>
+        </select>
+    </div>
+    <div>
+        <button onclick="onEncryptFile()">Encrypt File</button>
+        <button onclick="onDecryptFile()">Decrypt File</button>
+    </div>
+
+    <div class="result">
+        <h2>Result:</h2>
+        <p id="result"></p>
+        <button onclick="copyResult()">Copy</button>
+    </div>
+
     <script>
         async function getKeyFromPassword(password) {
             const encoder = new TextEncoder();
@@ -18,9 +121,9 @@
             return crypto.subtle.deriveKey(
                 {
                     name: "PBKDF2",
-                    salt: encoder.encode("salt"), // Use a proper salt in a real application
+                    salt: encoder.encode("salt"), // Ideally use a random salt and store it securely
                     iterations: 100000,
-                    hash: "SHA-256"
+                    hash: "SHA-256",
                 },
                 keyMaterial,
                 { name: "AES-GCM", length: 256 },
@@ -45,10 +148,12 @@
             const ivAndCiphertext = new Uint8Array(iv.length + ciphertext.byteLength);
             ivAndCiphertext.set(iv);
             ivAndCiphertext.set(new Uint8Array(ciphertext), iv.length);
-            if (type === 'base64') {
+            if (type === "base64") {
                 return btoa(String.fromCharCode(...ivAndCiphertext));
-            } else if (type === 'hex') {
-                return Array.from(ivAndCiphertext).map(b => b.toString(16).padStart(2, '0')).join('');
+            } else if (type === "hex") {
+                return Array.from(ivAndCiphertext)
+                    .map((b) => b.toString(16).padStart(2, "0"))
+                    .join("");
             }
         }
 
@@ -56,10 +161,12 @@
             const key = await getKeyFromPassword(password);
             const decoder = new TextDecoder();
             let data;
-            if (type === 'base64') {
-                data = Uint8Array.from(atob(encodedText), c => c.charCodeAt(0));
-            } else if (type === 'hex') {
-                data = new Uint8Array(encodedText.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+            if (type === "base64") {
+                data = Uint8Array.from(atob(encodedText), (c) => c.charCodeAt(0));
+            } else if (type === "hex") {
+                data = new Uint8Array(
+                    encodedText.match(/.{1,2}/g).map((byte) => parseInt(byte, 16))
+                );
             }
             const iv = data.slice(0, 12);
             const ciphertext = data.slice(12);
@@ -75,25 +182,25 @@
         }
 
         async function onEncode() {
-            const text = document.getElementById('text-input').value;
-            const password = document.getElementById('password-input').value;
-            const type = document.getElementById('encoding-type').value;
+            const text = document.getElementById("text-input").value;
+            const password = document.getElementById("password-input").value;
+            const type = document.getElementById("encoding-type").value;
             if (text && password) {
                 const encodedText = await encodeText(text, password, type);
-                document.getElementById('result').innerText = encodedText;
+                document.getElementById("result").innerText = encodedText;
             } else {
                 alert("Please enter text and password to encode.");
             }
         }
 
         async function onDecode() {
-            const encodedText = document.getElementById('text-input').value;
-            const password = document.getElementById('password-input').value;
-            const type = document.getElementById('encoding-type').value;
+            const encodedText = document.getElementById("text-input").value;
+            const password = document.getElementById("password-input").value;
+            const type = document.getElementById("encoding-type").value;
             if (encodedText && password) {
                 try {
                     const decodedText = await decodeText(encodedText, password, type);
-                    document.getElementById('result').innerText = decodedText;
+                    document.getElementById("result").innerText = decodedText;
                 } catch (error) {
                     alert("Invalid encoded text or password.");
                 }
@@ -102,55 +209,174 @@
             }
         }
 
+        // File encryption functions
+        async function onEncryptFile() {
+            const fileInput = document.getElementById("file-input");
+            const password = document.getElementById("file-password-input").value;
+            const type = document.getElementById("file-encoding-type").value;
+
+            if (!fileInput.files.length) {
+                alert("Please select a file to encrypt.");
+                return;
+            }
+            if (!password) {
+                alert("Please enter a password for encryption.");
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const arrayBuffer = await file.arrayBuffer();
+            const key = await getKeyFromPassword(password);
+            const iv = window.crypto.getRandomValues(new Uint8Array(12));
+
+            try {
+                const ciphertext = await crypto.subtle.encrypt(
+                    {
+                        name: "AES-GCM",
+                        iv: iv,
+                    },
+                    key,
+                    arrayBuffer
+                );
+
+                // Prepend IV
+                const ivAndCiphertext = new Uint8Array(iv.length + ciphertext.byteLength);
+                ivAndCiphertext.set(iv);
+                ivAndCiphertext.set(new Uint8Array(ciphertext), iv.length);
+
+                let encoded;
+                if (type === "base64") {
+                    encoded = btoa(String.fromCharCode(...ivAndCiphertext));
+                } else {
+                    encoded = Array.from(ivAndCiphertext)
+                        .map((b) => b.toString(16).padStart(2, "0"))
+                        .join("");
+                }
+
+                // Create a downloadable file with encoded content
+                const blob = new Blob([encoded], { type: "text/plain" });
+                const url = URL.createObjectURL(blob);
+                downloadURL(url, file.name + ".enc." + type);
+                document.getElementById("result").innerText =
+                    "File encrypted and downloaded: " + file.name + ".enc." + type;
+            } catch (e) {
+                alert("Encryption failed: " + e.message);
+            }
+        }
+
+        async function onDecryptFile() {
+            const fileInput = document.getElementById("file-input");
+            const password = document.getElementById("file-password-input").value;
+            const type = document.getElementById("file-encoding-type").value;
+
+            if (!fileInput.files.length) {
+                alert("Please select a file to decrypt.");
+                return;
+            }
+            if (!password) {
+                alert("Please enter a password for decryption.");
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const fileText = await file.text();
+
+            try {
+                let data;
+                if (type === "base64") {
+                    data = Uint8Array.from(atob(fileText.trim()), (c) => c.charCodeAt(0));
+                } else if (type === "hex") {
+                    data = new Uint8Array(
+                        fileText.trim().match(/.{1,2}/g).map((byte) => parseInt(byte, 16))
+                    );
+                } else {
+                    throw new Error("Unsupported encoding type");
+                }
+
+                const iv = data.slice(0, 12);
+                const ciphertext = data.slice(12);
+
+                const key = await getKeyFromPassword(password);
+
+                const decryptedBuffer = await crypto.subtle.decrypt(
+                    {
+                        name: "AES-GCM",
+                        iv: iv,
+                    },
+                    key,
+                    ciphertext
+                );
+
+                // Try to detect if decrypted content is text (UTF-8)
+                let decryptedText;
+                try {
+                    decryptedText = new TextDecoder().decode(decryptedBuffer);
+                } catch {
+                    decryptedText = null;
+                }
+
+                // Download decrypted content
+                let blob;
+                if (decryptedText !== null && isProbablyText(decryptedText)) {
+                    blob = new Blob([decryptedText], { type: "text/plain" });
+                } else {
+                    blob = new Blob([decryptedBuffer]);
+                }
+
+                const url = URL.createObjectURL(blob);
+
+                // Remove the .enc.base64 or .enc.hex extension from original filename for saving
+                let originalName = file.name;
+                if (originalName.endsWith(".enc.base64")) {
+                    originalName = originalName.slice(0, -11);
+                } else if (originalName.endsWith(".enc.hex")) {
+                    originalName = originalName.slice(0, -8);
+                } else if (originalName.endsWith(".enc")) {
+                    originalName = originalName.slice(0, -4);
+                } else {
+                    originalName = originalName + ".dec";
+                }
+
+                downloadURL(url, originalName);
+                document.getElementById("result").innerText =
+                    "File decrypted and downloaded: " + originalName;
+            } catch (e) {
+                alert("Decryption failed: " + e.message);
+            }
+        }
+
+        function downloadURL(url, filename) {
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = filename;
+            a.style.display = "none";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Helper: crude check if string looks like text
+        function isProbablyText(str) {
+            // Check if there are non-printable characters, allowing basic whitespace and common punctuations
+            return /^[\x09\x0A\x0D\x20-\x7E]*$/.test(str);
+        }
+
+        // Existing copy/paste functions
         function copyResult() {
-            const resultText = document.getElementById('result').innerText;
-            navigator.clipboard.writeText(resultText).catch(err => {
-                console.error('Failed to copy: ', err);
+            const resultText = document.getElementById("result").innerText;
+            navigator.clipboard.writeText(resultText).catch((err) => {
+                console.error("Failed to copy: ", err);
             });
         }
 
         function pasteText() {
-            navigator.clipboard.readText().then(text => {
-                document.getElementById('text-input').value = text;
-            }).catch(err => {
-                console.error('Failed to paste: ', err);
+            navigator.clipboard.readText().then((text) => {
+                document.getElementById("text-input").value = text;
+            }).catch((err) => {
+                console.error("Failed to paste: ", err);
             });
         }
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/@widgetbot/html-embed"></script>
-</head>
-<body>
-    <h1>Secure Encoder</h1>
-    <div>
-        <label for="text-input">Enter text:</label>
-        <input type="text" id="text-input">
-        <button onclick="pasteText()">Paste</button>
-    </div>
-    <div>
-        <label for="password-input">Enter password:</label>
-        <input type="password" id="password-input">
-    </div>
-    <div>
-        <label for="encoding-type">Encoding Type:</label>
-        <select id="encoding-type">
-            <option value="base64">Base64</option>
-            <option value="hex">Hex</option>
-        </select>
-    </div>
-    <div>
-        <button onclick="onEncode()">Encode</button>
-        <button onclick="onDecode()">Decode</button>
-    </div>
-    <div class="result">
-        <h2>Result:</h2>
-        <p id="result"></p>
-        <button onclick="copyResult()">Copy</button>
-    </div>
-    <widgetbot
-        server="1322039706954891274"
-        channel="1322039706954891277"
-        width="800"
-        height="600"
-    ></widgetbot>
 </body>
 </html>
