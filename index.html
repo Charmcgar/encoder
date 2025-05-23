@@ -3,93 +3,174 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Secure Encoder</title>
+<title>Secure Encoder with File Support</title>
 <style>
-  body {
-    font-family: Arial, sans-serif;
-    max-width: 800px;
-    margin: 20px auto;
-    padding: 10px;
-  }
-  input, select, button {
-    margin: 5px 0 10px 0;
-    padding: 6px;
-    width: 100%;
+  /* Reset & base */
+  * {
     box-sizing: border-box;
   }
-  label {
-    font-weight: bold;
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f5f7fa;
+    color: #333;
+    max-width: 720px;
+    margin: 30px auto;
+    padding: 20px 25px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgb(0 0 0 / 0.1);
   }
-  .result {
-    margin-top: 20px;
-    background: #f4f4f4;
-    padding: 10px;
-    white-space: pre-wrap;
-    word-wrap: break-word;
+  h1 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #004d99;
+    letter-spacing: 1px;
+  }
+  label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #555;
+  }
+  textarea, input[type="text"], input[type="password"], select {
+    width: 100%;
+    padding: 12px 14px;
+    font-size: 1rem;
+    border: 1.8px solid #ccc;
+    border-radius: 6px;
+    background-color: #fff;
+    transition: border-color 0.3s ease;
+    resize: vertical;
+  }
+  textarea:focus, input[type="text"]:focus, input[type="password"]:focus, select:focus {
+    border-color: #0077cc;
+    outline: none;
+    background-color: #f0f7ff;
+  }
+  button {
+    cursor: pointer;
+    background-color: #0077cc;
+    border: none;
+    color: white;
+    font-weight: 600;
+    font-size: 1rem;
+    padding: 12px 18px;
+    margin-top: 12px;
+    margin-right: 10px;
+    border-radius: 6px;
+    box-shadow: 0 3px 6px rgb(0 119 204 / 0.4);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  button:hover:not(:disabled) {
+    background-color: #005fa3;
+    box-shadow: 0 5px 14px rgb(0 95 163 / 0.5);
+  }
+  button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+  .buttons-row {
+    margin-top: 10px;
+    display: flex;
+    flex-wrap: wrap;
   }
   .buttons-row button {
-    width: auto;
-    margin-right: 10px;
+    flex: 1 1 150px;
+    margin-bottom: 10px;
+  }
+  .file-section, .text-section {
+    margin-top: 30px;
+  }
+  .result {
+    margin-top: 30px;
+    background-color: #e9f1ff;
+    border-radius: 8px;
+    padding: 20px;
+    color: #1a1a1a;
+    font-family: monospace, monospace;
+    white-space: pre-wrap;
+    min-height: 100px;
+    box-shadow: inset 0 0 6px rgb(0 119 204 / 0.15);
+  }
+  .result h2 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-weight: 700;
+    color: #004d99;
+  }
+  @media (max-width: 480px) {
+    .buttons-row {
+      flex-direction: column;
+    }
+    .buttons-row button {
+      margin-right: 0;
+      width: 100%;
+    }
   }
 </style>
 </head>
 <body>
 
-<h1>Secure Encoder</h1>
+<h1>Secure Encoder with File Support</h1>
 
-<!-- Text input -->
-<div>
-  <label for="text-input">Enter text or encoded text:</label>
-  <textarea id="text-input" rows="4" placeholder="Type or paste here..."></textarea>
-  <button onclick="pasteText()">Paste</button>
-</div>
+<div class="text-section">
+  <label for="text-input">Text to encrypt/decrypt:</label>
+  <textarea id="text-input" rows="5" placeholder="Type or paste text here..."></textarea>
+  <button onclick="pasteText()">Paste from Clipboard</button>
 
-<!-- Password input -->
-<div>
-  <label for="password-input">Enter password:</label>
-  <input type="password" id="password-input" placeholder="Your secret password" />
-</div>
+  <label for="password-input-text" style="margin-top: 20px;">Password:</label>
+  <input type="password" id="password-input-text" placeholder="Enter password" autocomplete="new-password" />
 
-<!-- Encoding type -->
-<div>
-  <label for="encoding-type">Encoding Type:</label>
+  <label for="encoding-type" style="margin-top: 20px;">Encoding Type:</label>
   <select id="encoding-type">
     <option value="base64">Base64</option>
     <option value="hex">Hex</option>
   </select>
+
+  <div class="buttons-row">
+    <button id="encode-text-btn" onclick="onEncodeText()">Encrypt Text</button>
+    <button id="decode-text-btn" onclick="onDecodeText()">Decrypt Text</button>
+  </div>
 </div>
 
-<!-- Text encode/decode buttons -->
-<div class="buttons-row">
-  <button onclick="onEncode()">Encode Text</button>
-  <button onclick="onDecode()">Decode Text</button>
-</div>
+<hr style="margin-top: 40px; margin-bottom: 40px;" />
 
-<hr />
-
-<!-- File input for encryption/decryption -->
-<div>
-  <label for="file-input">Select file to encrypt or decrypt:</label>
+<div class="file-section">
+  <label for="file-input">Select file:</label>
   <input type="file" id="file-input" />
+
+  <label for="password-input-file" style="margin-top: 20px;">Password:</label>
+  <input type="password" id="password-input-file" placeholder="Enter password" autocomplete="new-password" />
+
+  <label for="encoding-type-file" style="margin-top: 20px;">Encoding Type (for text operations only):</label>
+  <select id="encoding-type-file" disabled>
+    <option value="base64" selected>Base64</option>
+    <option value="hex">Hex</option>
+  </select>
+
+  <div class="buttons-row">
+    <button id="encrypt-file-btn" onclick="onEncryptFile()">Encrypt File</button>
+    <button id="decrypt-file-btn" onclick="onDecryptFile()">Decrypt File</button>
+  </div>
 </div>
 
-<!-- File operation buttons -->
-<div class="buttons-row">
-  <button onclick="onEncryptFile()">Encrypt File</button>
-  <button onclick="onDecryptFile()">Decrypt File</button>
-</div>
-
-<hr />
-
-<!-- Result display -->
 <div class="result">
   <h2>Result:</h2>
-  <pre id="result" style="white-space: pre-wrap;"></pre>
-  <button onclick="copyResult()">Copy</button>
-  <button onclick="saveResultAsFile()">Save Result as File</button>
+  <pre id="result"></pre>
+  <div class="buttons-row">
+    <button onclick="copyResult()">Copy Result</button>
+    <button onclick="saveResultAsFile()">Save Result as File</button>
+  </div>
 </div>
 
 <script>
+  // Utility: disable/enable buttons during async ops
+  function setLoading(isLoading) {
+    document.querySelectorAll('button').forEach(btn => {
+      btn.disabled = isLoading;
+    });
+  }
+
   async function getKeyFromPassword(password, salt) {
     const encoder = new TextEncoder();
     const keyMaterial = await crypto.subtle.importKey(
@@ -126,7 +207,6 @@
       data
     );
 
-    // Concatenate salt + iv + ciphertext
     const combined = new Uint8Array(salt.length + iv.length + ciphertext.byteLength);
     combined.set(salt, 0);
     combined.set(iv, salt.length);
@@ -148,6 +228,10 @@
       data = new Uint8Array(encodedText.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
     }
 
+    if (data.length < 28) {
+      throw new Error("Data too short to decode.");
+    }
+
     const salt = data.slice(0, 16);
     const iv = data.slice(16, 28);
     const ciphertext = data.slice(28);
@@ -161,35 +245,49 @@
     return decoder.decode(decrypted);
   }
 
-  async function onEncode() {
-    const text = document.getElementById('text-input').value;
-    const password = document.getElementById('password-input').value;
+  async function onEncodeText() {
+    const text = document.getElementById('text-input').value.trim();
+    const password = document.getElementById('password-input-text').value;
     const type = document.getElementById('encoding-type').value;
-    if (text && password) {
-      try {
-        const encoded = await encodeText(text, password, type);
-        document.getElementById('result').innerText = encoded;
-      } catch (e) {
-        alert('Encryption failed: ' + e.message);
-      }
-    } else {
-      alert("Please enter text and password to encode.");
+    if (!text) {
+      alert("Please enter some text to encrypt.");
+      return;
+    }
+    if (!password) {
+      alert("Please enter a password.");
+      return;
+    }
+    setLoading(true);
+    try {
+      const encoded = await encodeText(text, password, type);
+      document.getElementById('result').innerText = encoded;
+    } catch (e) {
+      alert("Encryption error: " + e.message);
+    } finally {
+      setLoading(false);
     }
   }
 
-  async function onDecode() {
-    const encodedText = document.getElementById('text-input').value;
-    const password = document.getElementById('password-input').value;
+  async function onDecodeText() {
+    const encodedText = document.getElementById('text-input').value.trim();
+    const password = document.getElementById('password-input-text').value;
     const type = document.getElementById('encoding-type').value;
-    if (encodedText && password) {
-      try {
-        const decoded = await decodeText(encodedText, password, type);
-        document.getElementById('result').innerText = decoded;
-      } catch (e) {
-        alert("Decryption failed: Invalid encoded text or password.");
-      }
-    } else {
-      alert("Please enter encoded text and password to decode.");
+    if (!encodedText) {
+      alert("Please enter encoded text to decrypt.");
+      return;
+    }
+    if (!password) {
+      alert("Please enter a password.");
+      return;
+    }
+    setLoading(true);
+    try {
+      const decoded = await decodeText(encodedText, password, type);
+      document.getElementById('result').innerText = decoded;
+    } catch (e) {
+      alert("Decryption error: " + e.message);
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -200,7 +298,7 @@
       return;
     }
     navigator.clipboard.writeText(resultText).catch(err => {
-      console.error('Failed to copy:', err);
+      alert("Copy failed: " + err);
     });
   }
 
@@ -229,7 +327,7 @@
     navigator.clipboard.readText().then(text => {
       document.getElementById('text-input').value = text;
     }).catch(err => {
-      console.error('Failed to paste:', err);
+      alert("Failed to paste from clipboard: " + err);
     });
   }
 
@@ -237,8 +335,7 @@
 
   async function onEncryptFile() {
     const fileInput = document.getElementById('file-input');
-    const password = document.getElementById('password-input').value;
-    const type = document.getElementById('encoding-type').value;
+    const password = document.getElementById('password-input-file').value;
 
     if (!fileInput.files.length) {
       alert("Please select a file to encrypt.");
@@ -249,40 +346,41 @@
       return;
     }
 
-    const file = fileInput.files[0];
-    const arrayBuffer = await file.arrayBuffer();
-
+    setLoading(true);
     try {
+      const file = fileInput.files[0];
+      const arrayBuffer = await file.arrayBuffer();
+
       const salt = window.crypto.getRandomValues(new Uint8Array(16));
       const key = await getKeyFromPassword(password, salt);
       const iv = window.crypto.getRandomValues(new Uint8Array(12));
+
       const ciphertext = await crypto.subtle.encrypt(
         { name: "AES-GCM", iv: iv },
         key,
         arrayBuffer
       );
 
-      // Concatenate salt + iv + ciphertext
       const combined = new Uint8Array(salt.length + iv.length + ciphertext.byteLength);
       combined.set(salt, 0);
       combined.set(iv, salt.length);
       combined.set(new Uint8Array(ciphertext), salt.length + iv.length);
 
-      // Create a blob and trigger download
       const blob = new Blob([combined]);
       const downloadName = file.name + ".encrypted";
       triggerDownload(blob, downloadName);
 
-      document.getElementById('result').innerText = `File encrypted and downloaded as "${downloadName}"`;
-
+      document.getElementById('result').innerText = `File encrypted and downloaded as:\n${downloadName}`;
     } catch (e) {
       alert("File encryption failed: " + e.message);
+    } finally {
+      setLoading(false);
     }
   }
 
   async function onDecryptFile() {
     const fileInput = document.getElementById('file-input');
-    const password = document.getElementById('password-input').value;
+    const password = document.getElementById('password-input-file').value;
 
     if (!fileInput.files.length) {
       alert("Please select a file to decrypt.");
@@ -293,37 +391,43 @@
       return;
     }
 
-    const file = fileInput.files[0];
-    const arrayBuffer = await file.arrayBuffer();
-    const data = new Uint8Array(arrayBuffer);
-
+    setLoading(true);
     try {
-      // Extract salt, iv, ciphertext from file
+      const file = fileInput.files[0];
+      const arrayBuffer = await file.arrayBuffer();
+      const data = new Uint8Array(arrayBuffer);
+
+      if (data.length < 28) {
+        throw new Error("Encrypted file too short or corrupted.");
+      }
+
       const salt = data.slice(0, 16);
       const iv = data.slice(16, 28);
       const ciphertext = data.slice(28);
 
       const key = await getKeyFromPassword(password, salt);
+
       const decryptedBuffer = await crypto.subtle.decrypt(
         { name: "AES-GCM", iv: iv },
         key,
         ciphertext
       );
 
-      // Create blob from decrypted data and trigger download
       const blob = new Blob([decryptedBuffer]);
+
       let downloadName = file.name;
       if (downloadName.endsWith(".encrypted")) {
-        downloadName = downloadName.slice(0, -10); // remove ".encrypted"
+        downloadName = downloadName.slice(0, -10);
       } else {
         downloadName = "decrypted_" + downloadName;
       }
       triggerDownload(blob, downloadName);
 
-      document.getElementById('result').innerText = `File decrypted and downloaded as "${downloadName}"`;
-
+      document.getElementById('result').innerText = `File decrypted and downloaded as:\n${downloadName}`;
     } catch (e) {
       alert("File decryption failed: Invalid password or corrupted file.");
+    } finally {
+      setLoading(false);
     }
   }
 
